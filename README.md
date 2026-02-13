@@ -1,2 +1,2 @@
 # fyne-components
-A set of generic components that do useful things.
+A set of generic application components that do useful things.
