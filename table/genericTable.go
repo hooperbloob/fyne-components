@@ -2,39 +2,44 @@ package table
 
 import (
 	"image/color"
+	"sort"
 	"strings"
+	"tableApp1/meta"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
 )
 
 type Column[T any] struct {
-	width     int
-	heading   string
-	accessor  func(T) string
-	alignment fyne.TextAlign
-	iconColor func(T) color.Color
+	width         int
+	field         *meta.FieldDescriptor[T]
+	alignment     fyne.TextAlign
+	colorSelector func(T) color.Color
 }
 
 func (col *Column[T]) IsIcon() bool {
-	return col.iconColor != nil
+	return col.colorSelector != nil
 }
 
 func (col *Column[T]) ColorFor(item T) color.Color {
-	return col.iconColor(item)
+	return col.colorSelector(item)
 }
 
-func NewColumn[T any](width int, heading string, accessor func(T) string, valueAlignment fyne.TextAlign, iconColor func(T) color.Color) Column[T] {
+func (col *Column[T]) StringValueFor(item T) string {
+	return col.field.StringValueFor(item)
+}
+
+func NewColumn[T any](width int, field *meta.FieldDescriptor[T], valueAlignment fyne.TextAlign, colorSelector func(T) color.Color) Column[T] {
 
 	return Column[T]{
-		width:     width,
-		heading:   heading,
-		accessor:  accessor,
-		alignment: valueAlignment,
-		iconColor: iconColor,
+		width:         width,
+		field:         field,
+		alignment:     valueAlignment,
+		colorSelector: colorSelector,
 	}
 }
 
+// ========================================================================================================================================
 type GenericTable[T any] struct {
 	widget.BaseWidget
 	data         []T
@@ -42,6 +47,8 @@ type GenericTable[T any] struct {
 	table        *widget.Table
 	selectedRows map[int]bool
 	newItemFunc  func() T
+	sortCol      int
+	sortAsc      bool
 }
 
 func (gTable *GenericTable[T]) SetColumnWidths() {
@@ -75,7 +82,7 @@ func NewGenericTable[T any](columns []Column[T], newItemFunc func() T) *GenericT
 			column := gt.columns[id.Col]
 			item := gt.data[id.Row]
 
-			label.SetText(column.accessor(item))
+			label.SetText(column.StringValueFor(item))
 			label.Alignment = column.alignment
 
 			if column.IsIcon() {
@@ -108,7 +115,7 @@ func (gt *GenericTable[T]) setupHeaders() {
 	gt.table.UpdateHeader = func(id widget.TableCellID, cell fyne.CanvasObject) {
 		label := cell.(*widget.Label)
 		if id.Col >= 0 && id.Col < len(gt.columns) {
-			label.SetText(gt.columns[id.Col].heading)
+			label.SetText(gt.columns[id.Col].field.Label)
 			label.TextStyle = fyne.TextStyle{Bold: true}
 		}
 	}
@@ -198,11 +205,11 @@ func (gt *GenericTable[T]) CreateRenderer() fyne.WidgetRenderer {
 
 func (gt *GenericTable[T]) asLineOn(sb *strings.Builder, item T, separator string) {
 
-	sb.WriteString(gt.columns[0].accessor(item))
+	sb.WriteString(gt.columns[0].field.Accessor(item))
 
 	for i := 1; i < len(gt.columns); i++ {
 		sb.WriteString(separator)
-		sb.WriteString(gt.columns[i].accessor(item))
+		sb.WriteString(gt.columns[i].field.Accessor(item))
 	}
 }
 
@@ -224,5 +231,33 @@ func (gt *GenericTable[T]) SelectAll() {
 			gt.table.Select(widget.TableCellID{Row: r, Col: c})
 		}
 	}
+	gt.table.Refresh()
+}
+
+func (gt *GenericTable[T]) SortBy(col int) {
+
+	if col < 0 || col >= len(gt.columns) {
+		return
+	}
+
+	column := gt.columns[col]
+	if column.field.LessThan == nil {
+		return
+	}
+
+	if gt.sortCol == col {
+		gt.sortAsc = !gt.sortAsc
+	} else {
+		gt.sortCol = col
+		gt.sortAsc = true
+	}
+
+	sort.Slice(gt.data, func(i, j int) bool {
+		if gt.sortAsc {
+			return column.field.LessThan(gt.data[i], gt.data[j])
+		}
+		return column.field.LessThan(gt.data[j], gt.data[i])
+	})
+
 	gt.table.Refresh()
 }

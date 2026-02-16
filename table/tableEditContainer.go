@@ -26,6 +26,7 @@ type TableContainer[T any] struct {
 	addButton      *widget.Button
 	editButton     *widget.Button
 	deleteButton   *widget.Button
+	deleteAction   ItemAction[T]
 	customActions  []ItemAction[T]
 	customControls []*widget.Button
 	container      *fyne.Container

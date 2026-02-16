@@ -13,8 +13,8 @@ func main() {
 	myWindow := myApp.NewWindow("Generic Table Demo")
 	myWindow.Resize(fyne.NewSize(500, 200))
 
-	tableContainer := domains.SetupPeopleTable(myWindow)
-	//tableContainer := domains.SetupFileTable(myWindow, "~/Downloads")
+	//tableContainer := domains.SetupPeopleTable(myWindow)
+	tableContainer := domains.SetupFileTable(myWindow, "~/Downloads")
 
 	myWindow.SetContent(tableContainer)
 

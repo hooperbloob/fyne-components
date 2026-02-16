@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"strconv"
+	"tableApp1/meta"
 	"tableApp1/table"
 
 	"fyne.io/fyne/v2"
@@ -27,6 +28,17 @@ var people = []Person{
 	{Name: "Mitch Sommerset", Email: "mitch@cranky.com", Age: 39},
 }
 
+var statusField = meta.NewFieldDescriptor("?", func(p Person) string {
+	if p.Email == "" {
+		return "n"
+	} else {
+		return "y "
+	}
+}, nil, nil)
+var personNameField = meta.NewFieldDescriptor("Name", func(p Person) string { return p.Name }, nil, nil)
+var personEmailField = meta.NewFieldDescriptor("EMail", func(p Person) string { return p.Email }, nil, nil)
+var personAgeField = meta.NewFieldDescriptor("Age", func(p Person) string { return fmt.Sprintf("%d", p.Age) }, nil, func(a, b Person) bool { return a.Age < b.Age })
+
 var colorSetter = func(person Person) color.Color {
 
 	if person.Email == "" {
@@ -37,10 +49,10 @@ var colorSetter = func(person Person) color.Color {
 }
 
 var personColumns = []table.Column[Person]{
-	table.NewColumn(40, "?", func(p Person) string { return "  " }, fyne.TextAlignTrailing, colorSetter),
-	table.NewColumn(40, "Age", func(p Person) string { return fmt.Sprintf("%d", p.Age) }, fyne.TextAlignLeading, nil),
-	table.NewColumn(100, "Name", func(p Person) string { return p.Name }, fyne.TextAlignLeading, nil),
-	table.NewColumn(190, "Email", func(p Person) string { return p.Email }, fyne.TextAlignLeading, nil),
+	table.NewColumn(40, statusField, fyne.TextAlignTrailing, colorSetter),
+	table.NewColumn(40, personAgeField, fyne.TextAlignLeading, nil),
+	table.NewColumn(100, personNameField, fyne.TextAlignLeading, nil),
+	table.NewColumn(190, personEmailField, fyne.TextAlignLeading, nil),
 }
 
 var ageValidator = func(s string) error {

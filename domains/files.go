@@ -5,7 +5,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"tableApp1/meta"
 	"tableApp1/table"
+
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -20,10 +22,15 @@ type File struct {
 	Size   int64
 }
 
+var fileStatusField = meta.NewFieldDescriptor("?", func(f File) string { return f.Name }, nil, nil)
+var fileNameField = meta.NewFieldDescriptor("Name", func(f File) string { return f.Name }, nil, nil)
+var fileTimeField = meta.NewFieldDescriptor("Time", func(f File) string { return f.Time.Format("2006 01 02150405") }, nil, nil)
+var fileSizeField = meta.NewFieldDescriptor("Size", func(f File) string { return fmt.Sprintf("%d", f.Size) }, nil, nil)
+
 var fileColumns = []table.Column[File]{
-	table.NewColumn(130, "Size", func(f File) string { return fmt.Sprintf("%d", f.Size) }, fyne.TextAlignTrailing, nil),
-	table.NewColumn(130, "Time", func(f File) string { return f.Time.Format("2006 01 02150405") }, fyne.TextAlignLeading, nil),
-	table.NewColumn(300, "Name", func(f File) string { return f.Name }, fyne.TextAlignLeading, nil),
+	table.NewColumn(130, fileSizeField, fyne.TextAlignTrailing, nil),
+	table.NewColumn(130, fileTimeField, fyne.TextAlignLeading, nil),
+	table.NewColumn(300, fileNameField, fyne.TextAlignLeading, nil),
 }
 
 func expandPath(path string) (string, error) {
