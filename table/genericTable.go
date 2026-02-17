@@ -1,10 +1,11 @@
 package table
 
 import (
-	"fyne-components/meta"
 	"image/color"
 	"sort"
 	"strings"
+
+	"github.com/hooperbloob/fyne-components/meta"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"

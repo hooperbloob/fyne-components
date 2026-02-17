@@ -2,11 +2,12 @@ package domains
 
 import (
 	"fmt"
-	"fyne-components/meta"
-	"fyne-components/table"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/hooperbloob/fyne-components/meta"
+	"github.com/hooperbloob/fyne-components/table"
 
 	"time"
 

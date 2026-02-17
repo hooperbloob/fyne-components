@@ -2,10 +2,11 @@ package domains
 
 import (
 	"fmt"
-	"fyne-components/meta"
-	"fyne-components/table"
 	"image/color"
 	"strconv"
+
+	"github.com/hooperbloob/fyne-components/meta"
+	"github.com/hooperbloob/fyne-components/table"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"

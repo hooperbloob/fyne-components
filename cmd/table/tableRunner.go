@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fyne-components/domains"
+	"github.com/hooperbloob/fyne-components/domains"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"

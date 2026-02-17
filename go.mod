@@ -1,4 +1,4 @@
-module fyne-components
+module github.com/hooperbloob/fyne-components
 
 go 1.25.1
 
