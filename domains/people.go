@@ -51,7 +51,7 @@ var colorSetter = func(person Person) color.Color {
 var personColumns = []table.Column[Person]{
 	table.NewColumn(40, statusField, fyne.TextAlignTrailing, colorSetter),
 	table.NewColumn(40, personAgeField, fyne.TextAlignLeading, nil),
-	table.NewColumn(100, personNameField, fyne.TextAlignLeading, nil),
+	table.NewColumn(120, personNameField, fyne.TextAlignLeading, nil),
 	table.NewColumn(190, personEmailField, fyne.TextAlignLeading, nil),
 }
 

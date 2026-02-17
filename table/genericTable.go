@@ -7,6 +7,7 @@ import (
 	"tableApp1/meta"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -45,7 +46,7 @@ type GenericTable[T any] struct {
 	data         []T
 	columns      []Column[T]
 	table        *widget.Table
-	selectedRows map[int]bool
+	selectedRows IntSet
 	newItemFunc  func() T
 	sortCol      int
 	sortAsc      bool
@@ -64,7 +65,8 @@ func NewGenericTable[T any](columns []Column[T], newItemFunc func() T) *GenericT
 	gt := &GenericTable[T]{
 		columns:      columns,
 		newItemFunc:  newItemFunc,
-		selectedRows: make(map[int]bool),
+		selectedRows: IntSet{},
+		sortCol:      -1, // no sort column yet
 	}
 
 	gt.table = widget.NewTable(
@@ -85,6 +87,13 @@ func NewGenericTable[T any](columns []Column[T], newItemFunc func() T) *GenericT
 			label.SetText(column.StringValueFor(item))
 			label.Alignment = column.alignment
 
+			if gt.selectedRows.Contains(id.Row) {
+				cell.bg.FillColor = theme.SelectionColor()
+			} else {
+				cell.bg.FillColor = color.Transparent
+			}
+			cell.bg.Refresh()
+
 			if column.IsIcon() {
 				clr := column.ColorFor(item)
 				cell.shape.FillColor = clr
@@ -103,6 +112,25 @@ func NewGenericTable[T any](columns []Column[T], newItemFunc func() T) *GenericT
 
 	gt.ExtendBaseWidget(gt)
 	return gt
+}
+
+func (gt *GenericTable[T]) newSelectedRow(rowNum int) {
+	old := gt.selectedRows
+	gt.selectedRows = *NewIntSet(rowNum)
+
+	columnCount := len(gt.columns)
+
+	// refresh previously selected row
+	for rowIdx := range old {
+		for col := 0; col < columnCount; col++ {
+			gt.table.RefreshItem(widget.TableCellID{Row: rowIdx, Col: col})
+		}
+	}
+
+	// refresh newly selected row
+	for col := 0; col < columnCount; col++ {
+		gt.table.RefreshItem(widget.TableCellID{Row: rowNum, Col: col})
+	}
 }
 
 func (gt *GenericTable[T]) setupHeaders() {
@@ -136,7 +164,6 @@ func (gt *GenericTable[T]) setupHeaders() {
 func (gt *GenericTable[T]) sortOn(columnIdx int) {
 
 	gt.sortCol = columnIdx
-
 	asc := gt.sortAsc
 
 	lt := gt.columns[columnIdx].field.LessThan()
@@ -155,17 +182,17 @@ func (gt *GenericTable[T]) sortOn(columnIdx int) {
 func (gt *GenericTable[T]) setupHandlers() {
 
 	gt.table.OnSelected = func(id widget.TableCellID) {
-		gt.selectedRows[id.Row] = true
+		gt.selectedRows.Add(id.Row)
 	}
 
 	gt.table.OnUnselected = func(id widget.TableCellID) {
-		delete(gt.selectedRows, id.Row)
+		gt.selectedRows.Remove(id.Row)
 	}
 }
 
 func (gt *GenericTable[T]) SetData(data []T) {
 	gt.data = data
-	gt.selectedRows = make(map[int]bool)
+	gt.selectedRows.RemoveAll()
 	gt.table.Refresh()
 }
 
@@ -186,7 +213,7 @@ func (gt *GenericTable[T]) ItemEdited(idx int, item T) {
 
 func (gt *GenericTable[T]) SelectedItems() map[int]T {
 
-	if len(gt.selectedRows) == 0 {
+	if gt.selectedRows.size() < 0 {
 		return map[int]T{}
 	}
 
@@ -200,7 +227,7 @@ func (gt *GenericTable[T]) SelectedItems() map[int]T {
 
 // DeleteSelected removes all selected items from the table
 func (gt *GenericTable[T]) DeleteSelected() int {
-	if len(gt.selectedRows) == 0 {
+	if gt.selectedRows.size() == 0 {
 		return 0
 	}
 
@@ -220,39 +247,18 @@ func (gt *GenericTable[T]) DeleteSelected() int {
 
 	deleted := len(gt.data) - len(newData)
 	gt.data = newData
-	gt.selectedRows = make(map[int]bool)
+	gt.selectedRows.RemoveAll()
 	gt.table.Refresh()
 
 	return deleted
 }
 
 func (gt *GenericTable[T]) GetSelectedCount() int {
-	return len(gt.selectedRows)
+	return gt.selectedRows.size()
 }
 
 func (gt *GenericTable[T]) CreateRenderer() fyne.WidgetRenderer {
 	return widget.NewSimpleRenderer(gt.table)
-}
-
-func (gt *GenericTable[T]) asLineOn(sb *strings.Builder, item T, separator string) {
-
-	sb.WriteString(gt.columns[0].field.Accessor(item))
-
-	for i := 1; i < len(gt.columns); i++ {
-		sb.WriteString(separator)
-		sb.WriteString(gt.columns[i].field.Accessor(item))
-	}
-}
-
-func (gt *GenericTable[T]) SelectionAsString(columnSeparator string, lineSeparator string) string {
-
-	var sb strings.Builder
-
-	for _, item := range gt.SelectedItems() {
-		gt.asLineOn(&sb, item, columnSeparator)
-		sb.WriteString(lineSeparator)
-	}
-	return sb.String()
 }
 
 func (gt *GenericTable[T]) SelectAll() {
@@ -265,25 +271,25 @@ func (gt *GenericTable[T]) SelectAll() {
 	gt.table.Refresh()
 }
 
-func (gt *GenericTable[T]) SortBy(col int) {
+// ==================== copy-selection-to-clipboard =======================
 
-	column := gt.columns[col]
+func (gt *GenericTable[T]) SelectionAsString(columnSeparator string, lineSeparator string) string {
 
-	if gt.sortCol == col {
-		gt.sortAsc = !gt.sortAsc
-	} else {
-		gt.sortCol = col
-		gt.sortAsc = true
+	var sb strings.Builder
+
+	for _, item := range gt.SelectedItems() {
+		gt.asLineOn(&sb, item, columnSeparator)
+		sb.WriteString(lineSeparator)
 	}
+	return sb.String()
+}
 
-	lt := column.field.LessThan()
+func (gt *GenericTable[T]) asLineOn(sb *strings.Builder, item T, separator string) {
 
-	sort.Slice(gt.data, func(i, j int) bool {
-		if gt.sortAsc {
-			return lt(gt.data[i], gt.data[j])
-		}
-		return lt(gt.data[j], gt.data[i])
-	})
+	sb.WriteString(gt.columns[0].field.Accessor(item))
 
-	gt.table.Refresh()
+	for i := 1; i < len(gt.columns); i++ {
+		sb.WriteString(separator)
+		sb.WriteString(gt.columns[i].field.Accessor(item))
+	}
 }

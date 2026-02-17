@@ -97,3 +97,37 @@ func (h *HeaderLabel) Tapped(*fyne.PointEvent) {
 		h.onTapped()
 	}
 }
+
+// ================= integer set ================
+
+type IntSet map[int]struct{}
+
+func NewIntSet(num int) *IntSet {
+
+	is := IntSet{}
+	is.Add(num)
+	return &is
+}
+
+func (set IntSet) size() int {
+	return len(set)
+}
+
+func (set IntSet) Add(v int) {
+	set[v] = struct{}{}
+}
+
+func (set IntSet) Remove(v int) {
+	delete(set, v)
+}
+
+func (set IntSet) RemoveAll() {
+	for v := range set {
+		delete(set, v)
+	}
+}
+
+func (set IntSet) Contains(v int) bool {
+	_, ok := set[v]
+	return ok
+}

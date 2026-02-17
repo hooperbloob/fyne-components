@@ -32,7 +32,6 @@ type TableContainer[T any] struct {
 	container      *fyne.Container
 	window         fyne.Window
 	editItemFunc   func(T, bool, int, func(T)) // Function to show add/edit dialog
-
 }
 
 // NewTableContainer creates a container with table and controls
@@ -66,12 +65,12 @@ func NewTableContainer[T any](
 
 	// Update delete button state when selection changes
 	table.table.OnSelected = func(id widget.TableCellID) {
-		table.selectedRows[id.Row] = true
+		table.newSelectedRow(id.Row)
 		tc.updateEditButtons()
 	}
 
 	table.table.OnUnselected = func(id widget.TableCellID) {
-		delete(table.selectedRows, id.Row)
+		table.selectedRows.Remove(id.Row)
 		tc.updateEditButtons()
 	}
 
