@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fyneComponents/domains"
+	"fyne-components/domains"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"

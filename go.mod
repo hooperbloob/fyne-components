@@ -1,4 +1,4 @@
-module fyneComponents
+module fyne-components
 
 go 1.25.1
 

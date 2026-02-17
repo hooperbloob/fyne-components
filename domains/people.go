@@ -2,8 +2,8 @@ package domains
 
 import (
 	"fmt"
-	"fyneComponents/meta"
-	"fyneComponents/table"
+	"fyne-components/meta"
+	"fyne-components/table"
 	"image/color"
 	"strconv"
 

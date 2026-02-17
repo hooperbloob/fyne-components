@@ -1,7 +1,7 @@
 package table
 
 import (
-	"fyneComponents/meta"
+	"fyne-components/meta"
 	"image/color"
 	"sort"
 	"strings"
