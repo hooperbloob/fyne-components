@@ -267,14 +267,7 @@ func (gt *GenericTable[T]) SelectAll() {
 
 func (gt *GenericTable[T]) SortBy(col int) {
 
-	if col < 0 || col >= len(gt.columns) {
-		return
-	}
-
 	column := gt.columns[col]
-	if column.field.LessThan == nil {
-		return
-	}
 
 	if gt.sortCol == col {
 		gt.sortAsc = !gt.sortAsc
