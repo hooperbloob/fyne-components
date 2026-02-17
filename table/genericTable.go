@@ -212,7 +212,7 @@ func (gt *GenericTable[T]) ItemEdited(idx int, item T) {
 	gt.table.Refresh()
 }
 
-func (gt *GenericTable[T]) SelectedItems() map[int]T {
+func (gt *GenericTable[T]) SelectedItemsByIdx() map[int]T {
 
 	if gt.selectedRows.size() < 0 {
 		return map[int]T{}
@@ -278,7 +278,7 @@ func (gt *GenericTable[T]) SelectionAsString(columnSeparator string, lineSeparat
 
 	var sb strings.Builder
 
-	for _, item := range gt.SelectedItems() {
+	for _, item := range gt.SelectedItemsByIdx() {
 		gt.asLineOn(&sb, item, columnSeparator)
 		sb.WriteString(lineSeparator)
 	}

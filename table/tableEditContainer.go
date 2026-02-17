@@ -15,7 +15,7 @@ import (
 type ItemAction[T any] struct {
 	Label   string
 	Icon    fyne.Resource
-	Action  func(T)
+	Action  func([]T)
 	Enabler func([]T) bool
 }
 
@@ -109,7 +109,7 @@ func (tc *TableContainer[T]) AdjustColumns() {
 
 func (tc *TableContainer[T]) updateEditButtons() {
 
-	selections := tc.table.SelectedItems()
+	selections := tc.table.SelectedItemsByIdx()
 	if len(selections) > 0 {
 		tc.editButton.Enable()
 		tc.deleteButton.Enable()
@@ -181,7 +181,7 @@ func firstValueOf[T any](items map[int]T) (int, T) {
 }
 
 func (tc *TableContainer[T]) handleEdit() {
-	selectedItems := tc.table.SelectedItems()
+	selectedItems := tc.table.SelectedItemsByIdx()
 	idx, item := firstValueOf(selectedItems)
 
 	tc.editItemFunc(item, false, idx, func(edited T) {
@@ -209,9 +209,9 @@ func (tc *TableContainer[T]) handleDelete() {
 func (tc *TableContainer[T]) handleCustom(index int) {
 
 	action := tc.customActions[index]
-	selectedItems := tc.table.SelectedItems()
+	selectedItems := valuesOf(tc.table.SelectedItemsByIdx())
 
-	action.Action(selectedItems[0])
+	action.Action(selectedItems)
 }
 
 // HandleKeyboard processes keyboard shortcuts

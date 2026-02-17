@@ -120,10 +120,14 @@ func SetupPeopleTable(window fyne.Window) *table.TableContainer[Person] {
 		{
 			Label:   "E",
 			Icon:    theme.MailSendIcon(),
-			Action:  func(p Person) { println("Email clicked for: " + p.Name) },
-			Enabler: func(p []Person) bool { return len(p[0].Email) > 0 }, // TODO loop through & check all
+			Action:  func(people []Person) { sendEmailFor(people) },
+			Enabler: func(people []Person) bool { return len(people[0].Email) > 0 }, // TODO loop through & check all
 		},
 	}
 
 	return table.NewTableContainer(gTable, window, editPersonFunc, customFunctions) // Create the container with controls
+}
+
+func sendEmailFor(p []Person) {
+	println("Email clicked for: " + p[0].Name)
 }
