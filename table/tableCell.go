@@ -74,3 +74,26 @@ func (tcr *tableCellRenderer) Destroy() {}
 func (tcr *tableCellRenderer) Objects() []fyne.CanvasObject {
 	return tcr.objects
 }
+
+// ========================== Table Header =========================
+
+type HeaderLabel struct {
+	widget.Label
+	onTapped func()
+}
+
+func NewHeaderLabel(text string, tapped func()) *HeaderLabel {
+	h := &HeaderLabel{
+		Label:    *widget.NewLabel(text),
+		onTapped: tapped,
+	}
+	h.ExtendBaseWidget(h)
+	h.TextStyle = fyne.TextStyle{Bold: true}
+	return h
+}
+
+func (h *HeaderLabel) Tapped(*fyne.PointEvent) {
+	if h.onTapped != nil {
+		h.onTapped()
+	}
+}

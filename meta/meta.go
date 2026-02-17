@@ -4,7 +4,7 @@ type FieldDescriptor[T any] struct {
 	Label     string
 	Accessor  func(T) string
 	Validator func(T) error     // field-specific validation
-	LessThan  func(a, b T) bool // optional, use if the string values aren't reliable for sorting.. i.e  number strings
+	lessThan  func(a, b T) bool // optional, use if the string values aren't reliable for sorting.. i.e  number strings
 }
 
 func NewFieldDescriptor[T any](label string, accessor func(T) string, validator func(T) error, comparator func(a, b T) bool) *FieldDescriptor[T] {
@@ -13,12 +13,23 @@ func NewFieldDescriptor[T any](label string, accessor func(T) string, validator 
 		Label:     label,
 		Accessor:  accessor,
 		Validator: validator,
-		LessThan:  comparator,
+		lessThan:  comparator,
 	}
 }
 
 func (fd *FieldDescriptor[T]) StringValueFor(item T) string {
 	return fd.Accessor(item)
+}
+
+func (fd *FieldDescriptor[T]) LessThan() func(a, b T) bool {
+
+	if fd.lessThan != nil {
+		return fd.lessThan
+	}
+
+	return func(a, b T) bool {
+		return fd.Accessor(a) < fd.Accessor(b)
+	}
 }
 
 type Validator[T any] interface {

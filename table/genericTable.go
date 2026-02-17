@@ -110,15 +110,46 @@ func (gt *GenericTable[T]) setupHeaders() {
 	gt.table.ShowHeaderColumn = false
 	gt.table.ShowHeaderRow = true
 	gt.table.CreateHeader = func() fyne.CanvasObject {
-		return widget.NewLabel("Header")
+		return NewHeaderLabel("", nil)
 	}
+
 	gt.table.UpdateHeader = func(id widget.TableCellID, cell fyne.CanvasObject) {
-		label := cell.(*widget.Label)
-		if id.Col >= 0 && id.Col < len(gt.columns) {
-			label.SetText(gt.columns[id.Col].field.Label)
-			label.TextStyle = fyne.TextStyle{Bold: true}
+		header := cell.(*HeaderLabel)
+
+		if id.Row == -1 {
+			labelTxt := gt.columns[id.Col].field.Label
+			if gt.sortCol == id.Col {
+				if gt.sortAsc {
+					labelTxt += " ↑"
+				} else {
+					labelTxt += " ↓"
+				}
+			}
+			header.SetText(labelTxt)
+			header.onTapped = func() {
+				gt.sortOn(id.Col)
+			}
 		}
 	}
+}
+
+func (gt *GenericTable[T]) sortOn(columnIdx int) {
+
+	gt.sortCol = columnIdx
+
+	asc := gt.sortAsc
+
+	lt := gt.columns[columnIdx].field.LessThan()
+
+	sort.Slice(gt.data, func(i, j int) bool {
+		if asc {
+			return lt(gt.data[i], gt.data[j])
+		}
+		return lt(gt.data[j], gt.data[i])
+	})
+
+	gt.sortAsc = !asc
+	gt.table.Refresh()
 }
 
 func (gt *GenericTable[T]) setupHandlers() {
@@ -252,11 +283,13 @@ func (gt *GenericTable[T]) SortBy(col int) {
 		gt.sortAsc = true
 	}
 
+	lt := column.field.LessThan()
+
 	sort.Slice(gt.data, func(i, j int) bool {
 		if gt.sortAsc {
-			return column.field.LessThan(gt.data[i], gt.data[j])
+			return lt(gt.data[i], gt.data[j])
 		}
-		return column.field.LessThan(gt.data[j], gt.data[i])
+		return lt(gt.data[j], gt.data[i])
 	})
 
 	gt.table.Refresh()
