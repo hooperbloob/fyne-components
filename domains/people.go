@@ -2,10 +2,10 @@ package domains
 
 import (
 	"fmt"
+	"fyneComponents/meta"
+	"fyneComponents/table"
 	"image/color"
 	"strconv"
-	"tableApp1/meta"
-	"tableApp1/table"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"

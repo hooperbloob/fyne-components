@@ -1,4 +1,4 @@
-module tableApp1
+module fyneComponents
 
 go 1.25.1
 

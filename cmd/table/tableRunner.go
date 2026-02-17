@@ -1,7 +1,7 @@
 package main
 
 import (
-	"tableApp1/domains"
+	"fyneComponents/domains"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"

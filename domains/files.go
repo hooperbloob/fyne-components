@@ -2,11 +2,11 @@ package domains
 
 import (
 	"fmt"
+	"fyneComponents/meta"
+	"fyneComponents/table"
 	"log"
 	"os"
 	"path/filepath"
-	"tableApp1/meta"
-	"tableApp1/table"
 
 	"time"
 

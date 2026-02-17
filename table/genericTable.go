@@ -1,10 +1,10 @@
 package table
 
 import (
+	"fyneComponents/meta"
 	"image/color"
 	"sort"
 	"strings"
-	"tableApp1/meta"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
