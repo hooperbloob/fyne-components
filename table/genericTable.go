@@ -212,16 +212,16 @@ func (gt *GenericTable[T]) ItemEdited(idx int, item T) {
 	gt.table.Refresh()
 }
 
-func (gt *GenericTable[T]) SelectedItemsByIdx() map[int]T {
+func (gt *GenericTable[T]) SelectedItemsByIdx() map[int]*T {
 
 	if gt.selectedRows.size() < 0 {
-		return map[int]T{}
+		return map[int]*T{}
 	}
 
 	// Build a map of indices to delete
-	selected := make(map[int]T)
+	selected := make(map[int]*T)
 	for key := range gt.selectedRows {
-		selected[key] = gt.data[key]
+		selected[key] = &gt.data[key]
 	}
 	return selected
 }
@@ -279,7 +279,7 @@ func (gt *GenericTable[T]) SelectionAsString(columnSeparator string, lineSeparat
 	var sb strings.Builder
 
 	for _, item := range gt.SelectedItemsByIdx() {
-		gt.asLineOn(&sb, item, columnSeparator)
+		gt.asLineOn(&sb, (*item), columnSeparator)
 		sb.WriteString(lineSeparator)
 	}
 	return sb.String()

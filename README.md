@@ -4,11 +4,12 @@ A set of generic application components that do useful things.
 ## Editable list/table
 
 A utility component that accepts an array of items and renders them in a table with columns.
-Create, edit, and delete controls are provided along with the option to render simple shapes
+Controls for creating, editing, and deleting are provided along with the option to render simple shapes
 as status icons.
 
 ![alt text](PeopleAndEmailTable.png)
 
-You can provide custom actions that operate on selected items along with predicates that disable them for items that don't qualify.
+* Custom actions can be supplied that operate on selected items along with predicates that disable them for items that don't qualify.
+* Proper sorting behaviour for all datatypes.
+* Users can copy selected rows to the clipboard as CSV entries
 
-A copy facility waits for Ctrl-C and then renders the columns to the clipboard as CSV entries.

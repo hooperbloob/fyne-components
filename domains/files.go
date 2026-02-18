@@ -84,7 +84,7 @@ func SetupFileTable(window fyne.Window, folder string) *table.TableContainer[Fil
 
 	gTable.SetData(FilesFrom(folder))
 
-	editFileFunc := func(file File, isAdd bool, idx int, callback func(File)) {
+	editFileFunc := func(file *File, isAdd bool, idx int, callback func(File)) {
 		nameEntry := widget.NewEntry()
 		nameEntry.SetText(file.Name)
 
@@ -116,8 +116,8 @@ func SetupFileTable(window fyne.Window, folder string) *table.TableContainer[Fil
 	// 	{
 	// 		Label:   "E",
 	// 		Icon:    theme.MailSendIcon(),
-	// 		Action:  func(p Person) { println("Email clicked for: " + p.Name) },
-	// 		Enabler: func(p []Person) bool { return len(p[0].Email) > 0 }, // TODO loop through & check all
+	// 		Action:  func(p []*Person) { println("Email clicked for: " + p[0].Name) },
+	// 		Enabler: func(p []*Person) bool { return len(p[0].Email) > 0 }, // TODO loop through & check all
 	// 	},
 	// }
 

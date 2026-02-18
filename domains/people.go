@@ -15,9 +15,10 @@ import (
 )
 
 type Person struct {
-	Name  string
-	Email string
-	Age   int
+	Name       string
+	Email      string
+	Age        int
+	EmailsSent int
 }
 
 var people = []Person{
@@ -39,6 +40,7 @@ var statusField = meta.NewFieldDescriptor("?", func(p Person) string {
 var personNameField = meta.NewFieldDescriptor("Name", func(p Person) string { return p.Name }, nil, nil)
 var personEmailField = meta.NewFieldDescriptor("EMail", func(p Person) string { return p.Email }, nil, nil)
 var personAgeField = meta.NewFieldDescriptor("Age", func(p Person) string { return fmt.Sprintf("%d", p.Age) }, nil, func(a, b Person) bool { return a.Age < b.Age })
+var personEmailsField = meta.NewFieldDescriptor("Emails", func(p Person) string { return fmt.Sprintf("%d", p.EmailsSent) }, nil, func(a, b Person) bool { return a.EmailsSent < b.EmailsSent })
 
 var colorSetter = func(person Person) color.Color {
 
@@ -51,9 +53,10 @@ var colorSetter = func(person Person) color.Color {
 
 var personColumns = []table.Column[Person]{
 	table.NewColumn(40, statusField, fyne.TextAlignTrailing, colorSetter),
-	table.NewColumn(40, personAgeField, fyne.TextAlignLeading, nil),
+	table.NewColumn(40, personAgeField, fyne.TextAlignTrailing, nil),
 	table.NewColumn(120, personNameField, fyne.TextAlignLeading, nil),
 	table.NewColumn(190, personEmailField, fyne.TextAlignLeading, nil),
+	table.NewColumn(30, personEmailsField, fyne.TextAlignTrailing, nil),
 }
 
 var ageValidator = func(s string) error {
@@ -80,7 +83,7 @@ func SetupPeopleTable(window fyne.Window) *table.TableContainer[Person] {
 
 	gTable.SetData(people)
 
-	editPersonFunc := func(person Person, isAdd bool, idx int, callback func(Person)) {
+	editPersonFunc := func(person *Person, isAdd bool, idx int, callback func(Person)) {
 		nameEntry := widget.NewEntry()
 		nameEntry.SetText(person.Name)
 
@@ -120,14 +123,19 @@ func SetupPeopleTable(window fyne.Window) *table.TableContainer[Person] {
 		{
 			Label:   "E",
 			Icon:    theme.MailSendIcon(),
-			Action:  func(people []Person) { sendEmailFor(people) },
-			Enabler: func(people []Person) bool { return len(people[0].Email) > 0 }, // TODO loop through & check all
+			Action:  func(people []*Person) bool { return sendEmailFor(people) },
+			Enabler: func(people []*Person) bool { return len(people[0].Email) > 0 }, // TODO loop through & check all
 		},
 	}
 
 	return table.NewTableContainer(gTable, window, editPersonFunc, customFunctions) // Create the container with controls
 }
 
-func sendEmailFor(p []Person) {
-	println("Email clicked for: " + p[0].Name)
+func sendEmailFor(people []*Person) bool {
+	for _, person := range people {
+		println("Email sent for: " + person.Name)
+		person.EmailsSent = person.EmailsSent + 1
+		println(person.Email)
+	}
+	return true
 }

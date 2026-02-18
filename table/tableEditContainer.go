@@ -15,8 +15,8 @@ import (
 type ItemAction[T any] struct {
 	Label   string
 	Icon    fyne.Resource
-	Action  func([]T)
-	Enabler func([]T) bool
+	Action  func([]*T) bool // true if the context changed, then refresh req'd
+	Enabler func([]*T) bool
 }
 
 // TableContainer wraps the GenericTable with controls
@@ -26,19 +26,19 @@ type TableContainer[T any] struct {
 	addButton      *widget.Button
 	editButton     *widget.Button
 	deleteButton   *widget.Button
-	deleteAction   ItemAction[T]
+	deleteAction   []ItemAction[T]
 	customActions  []ItemAction[T]
 	customControls []*widget.Button
 	container      *fyne.Container
 	window         fyne.Window
-	editItemFunc   func(T, bool, int, func(T)) // Function to show add/edit dialog
+	editItemFunc   func(*T, bool, int, func(T)) // Function to show add/edit dialog
 }
 
 // NewTableContainer creates a container with table and controls
 func NewTableContainer[T any](
 	table *GenericTable[T],
 	window fyne.Window,
-	editItemFunc func(T, bool, int, func(T)),
+	editItemFunc func(*T, bool, int, func(T)),
 	actions []ItemAction[T],
 ) *TableContainer[T] {
 	tc := &TableContainer[T]{
@@ -135,9 +135,9 @@ func (tc *TableContainer[T]) createControls() []fyne.CanvasObject {
 	return controls
 }
 
-func valuesOf[T any](mapp map[int]T) []T {
+func valuesOf[T any](mapp map[int]*T) []*T {
 
-	values := make([]T, len(mapp))
+	values := make([]*T, len(mapp))
 	i := 0
 	for _, val := range mapp {
 		values[i] = val
@@ -146,7 +146,7 @@ func valuesOf[T any](mapp map[int]T) []T {
 	return values
 }
 
-func (tc *TableContainer[T]) enableCustom(values []T) {
+func (tc *TableContainer[T]) enableCustom(values []*T) {
 
 	for idx, control := range tc.customControls {
 		if len(values) > 0 {
@@ -167,7 +167,7 @@ func (tc *TableContainer[T]) enableCustom(values []T) {
 // handleAdd shows dialog to add new item
 func (tc *TableContainer[T]) handleAdd() {
 	newItem := tc.table.newItemFunc()
-	tc.editItemFunc(newItem, true, -1, func(edited T) {
+	tc.editItemFunc(&newItem, true, -1, func(edited T) {
 		tc.table.AddItem(edited)
 	})
 }
@@ -205,13 +205,14 @@ func (tc *TableContainer[T]) handleDelete() {
 	}, tc.window)
 }
 
-// handleAdd shows dialog to add new item
-func (tc *TableContainer[T]) handleCustom(index int) {
+func (tc *TableContainer[T]) handleCustom(actionIdx int) {
 
-	action := tc.customActions[index]
+	action := tc.customActions[actionIdx]
 	selectedItems := valuesOf(tc.table.SelectedItemsByIdx())
 
-	action.Action(selectedItems)
+	if action.Action(selectedItems) {
+		tc.table.Refresh()
+	}
 }
 
 // HandleKeyboard processes keyboard shortcuts
