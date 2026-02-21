@@ -21,7 +21,7 @@ type Person struct {
 	EmailsSent int
 }
 
-var people = []Person{
+var people = []*Person{
 	{Name: "Alice Smith", Email: "alice@peanuts.com", Age: 30},
 	{Name: "Bob Johnson", Email: "", Age: 25},
 	{Name: "Carol Williams", Email: "carol@doughnuts.com", Age: 35},

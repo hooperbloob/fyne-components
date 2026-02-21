@@ -46,7 +46,7 @@ func expandPath(path string) (string, error) {
 	return path, nil
 }
 
-func FilesFrom(folder string) []File {
+func FilesFrom(folder string) []*File {
 
 	path, err := expandPath(folder)
 	if err != nil {
@@ -62,9 +62,9 @@ func FilesFrom(folder string) []File {
 	// Read the directory contents
 	localFiles, err := dir.Readdir(-1)
 
-	var files []File
+	var files []*File
 	for _, entry := range localFiles {
-		files = append(files, File{
+		files = append(files, &File{
 			Name: entry.Name(),
 			Size: entry.Size(),
 			Time: entry.ModTime(),

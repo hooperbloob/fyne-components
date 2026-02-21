@@ -168,7 +168,7 @@ func (tc *TableContainer[T]) enableCustom(values []*T) {
 func (tc *TableContainer[T]) handleAdd() {
 	newItem := tc.table.newItemFunc()
 	tc.editItemFunc(&newItem, true, -1, func(edited T) {
-		tc.table.AddItem(edited)
+		tc.table.AddItem(&edited)
 	})
 }
 
@@ -185,7 +185,7 @@ func (tc *TableContainer[T]) handleEdit() {
 	idx, item := firstValueOf(selectedItems)
 
 	tc.editItemFunc(item, false, idx, func(edited T) {
-		tc.table.ItemEdited(idx, edited)
+		tc.table.ItemEdited(idx, &edited)
 	})
 }
 
@@ -203,6 +203,10 @@ func (tc *TableContainer[T]) handleDelete() {
 			tc.updateEditButtons()
 		}
 	}, tc.window)
+}
+
+func (tc *TableContainer[T]) Redraw() {
+	tc.table.Refresh()
 }
 
 func (tc *TableContainer[T]) handleCustom(actionIdx int) {

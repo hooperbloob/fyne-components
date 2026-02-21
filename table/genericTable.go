@@ -44,7 +44,7 @@ func NewColumn[T any](width int, field *meta.FieldDescriptor[T], valueAlignment 
 // ========================================================================================================================================
 type GenericTable[T any] struct {
 	widget.BaseWidget
-	data         []T
+	data         []*T
 	columns      []Column[T]
 	table        *widget.Table
 	selectedRows IntSet
@@ -85,7 +85,7 @@ func NewGenericTable[T any](columns []Column[T], newItemFunc func() T) *GenericT
 			column := gt.columns[id.Col]
 			item := gt.data[id.Row]
 
-			label.SetText(column.StringValueFor(item))
+			label.SetText(column.StringValueFor((*item)))
 			label.Alignment = column.alignment
 
 			if gt.selectedRows.Contains(id.Row) {
@@ -96,7 +96,7 @@ func NewGenericTable[T any](columns []Column[T], newItemFunc func() T) *GenericT
 			cell.bg.Refresh()
 
 			if column.IsIcon() {
-				clr := column.ColorFor(item)
+				clr := column.ColorFor((*item))
 				cell.shape.FillColor = clr
 				cell.shape.Show()
 				cell.label.Hide()
@@ -171,9 +171,9 @@ func (gt *GenericTable[T]) sortOn(columnIdx int) {
 
 	sort.Slice(gt.data, func(i, j int) bool {
 		if asc {
-			return lt(gt.data[i], gt.data[j])
+			return lt((*gt.data[i]), (*gt.data[j]))
 		}
-		return lt(gt.data[j], gt.data[i])
+		return lt((*gt.data[j]), (*gt.data[i]))
 	})
 
 	gt.sortAsc = !asc
@@ -191,23 +191,23 @@ func (gt *GenericTable[T]) setupHandlers() {
 	}
 }
 
-func (gt *GenericTable[T]) SetData(data []T) {
+func (gt *GenericTable[T]) SetData(data []*T) {
 	gt.data = data
 	gt.selectedRows.RemoveAll()
 	gt.table.Refresh()
 }
 
-func (gt *GenericTable[T]) GetData() []T {
+func (gt *GenericTable[T]) GetData() []*T {
 	return gt.data
 }
 
-func (gt *GenericTable[T]) AddItem(item T) {
+func (gt *GenericTable[T]) AddItem(item *T) {
 	gt.data = append(gt.data, item)
 	gt.table.Refresh()
 }
 
 // Replaces the item at the index with the new one
-func (gt *GenericTable[T]) ItemEdited(idx int, item T) {
+func (gt *GenericTable[T]) ItemEdited(idx int, item *T) {
 	gt.data[idx] = item
 	gt.table.Refresh()
 }
@@ -221,7 +221,7 @@ func (gt *GenericTable[T]) SelectedItemsByIdx() map[int]*T {
 	// Build a map of indices to delete
 	selected := make(map[int]*T)
 	for key := range gt.selectedRows {
-		selected[key] = &gt.data[key]
+		selected[key] = gt.data[key]
 	}
 	return selected
 }
@@ -239,7 +239,7 @@ func (gt *GenericTable[T]) DeleteSelected() int {
 	}
 
 	// Create new slice without deleted items
-	newData := make([]T, 0, len(gt.data)-len(toDelete))
+	newData := make([]*T, 0, len(gt.data)-len(toDelete))
 	for i, item := range gt.data {
 		if !toDelete[i] {
 			newData = append(newData, item)
